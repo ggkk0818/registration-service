@@ -4,4 +4,4 @@ const generator = snowflakeGenerator(512);
 
 let id = generator.next().value;
 
-console.log(typeof id)
+console.log(typeof id, id)
