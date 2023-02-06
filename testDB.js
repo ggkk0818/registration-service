@@ -1,4 +1,4 @@
-import knex from "./utils/knex.js";
+import knex from "./src/utils/knex.js";
 
 class Base {
   constructor(props) {

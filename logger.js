@@ -16,7 +16,9 @@ const logger = createLogger({
   // change level if in dev environment versus production
   level: env === "production" ? "info" : "debug",
   format: format.combine(
-    format.label({ label: process.main ? path.basename(process.main.filename) : 'main' }),
+    format.label({
+      label: process.main ? path.basename(process.main.filename) : "main",
+    }),
     format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" })
   ),
   transports: [
