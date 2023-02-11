@@ -1,4 +1,4 @@
-import BaseDao from "./BaseDao";
+import BaseDao from "./BaseDao.js";
 
 class AdminDao extends BaseDao {
   constructor() {

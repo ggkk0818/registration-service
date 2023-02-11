@@ -1,13 +1,16 @@
 import createError from "http-errors";
-const express = require("express");
-const path = require("path");
-const cookieParser = require("cookie-parser");
-const morgan = require("morgan");
-const logger = require("./logger");
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+import cookieParser from "cookie-parser";
+import morgan from "morgan";
+import logger from "./logger.js";
 
-const indexRouter = require("./src/routes/index");
-const usersRouter = require("./src/routes/users");
-
+import indexRouter from "./src/routes/index.js";
+import usersRouter from "./src/routes/users.js";
+import adminRouter from "./src/routes/admin.js";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
 
 app.use(morgan("dev"));
@@ -18,6 +21,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
+app.use("/admin", adminRouter);
 
 //  捕捉404错误 catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -29,7 +33,6 @@ const _errorHandler = (err, req, res, next) => {
   const errorMsg = err.message;
   res.status(err.status || 500).json({
     code: -1,
-    success: false,
     message: errorMsg,
     data: {},
   });
