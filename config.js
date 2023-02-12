@@ -6,10 +6,5 @@ export default {
     password: "123456", // 自己设置的密码
     database: "registration", // 数据库的名字
   },
-  // 打印错误
-  log: {
-    error(message) {
-      console.log("[knex error]", message);
-    },
-  },
+  authSecretKey: 'P^hR5@9b8A4HrK&pM@'
 };

@@ -21,13 +21,21 @@ class BaseDao {
   }
 
   // 分页查询
-  list(query, start, limit) {
-    return knex(this.table)
+  async list(query, start = 0, limit = 10) {
+    let list = await knex(this.table)
       .select(this.props)
       .where(query)
       .whereNot("is_del", "=", 1)
       .offset(start)
       .limit(limit);
+    const total = await knex(this.table)
+      .count("id as CNT")
+      .where(query)
+      .whereNot("is_del", "=", 1);
+    return {
+      records: list,
+      total: total[0].CNT,
+    };
   }
 
   // 新增
@@ -54,10 +62,25 @@ class BaseDao {
   props2fields(obj) {
     let val = { ...this.defaultValues };
     if (this.props != null) {
-      val = val || {};
       Object.entries(this.props).forEach(([key, field]) => {
         if (obj[key] !== undefined) {
           val[field] = obj[key];
+        }
+      });
+    }
+    return val;
+  }
+  fileds2props(obj) {
+    let val = {
+      ...this.defaultValues,
+      ...obj,
+    };
+    if (this.props != null) {
+      Object.entries(this.props).forEach(([key, field]) => {
+        if (obj[field] !== undefined) {
+          val[key] = obj[field];
+          // 删除数据库字段
+          delete val[field];
         }
       });
     }

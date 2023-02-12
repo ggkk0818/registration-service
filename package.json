@@ -7,10 +7,14 @@
     "start": "node ./bin/www.js"
   },
   "dependencies": {
+    "connect-history-api-fallback": "^2.0.0",
     "cookie-parser": "~1.4.4",
+    "crypto-js": "^4.1.1",
     "debug": "~2.6.9",
     "express": "^4.18.2",
+    "express-jwt": "^8.4.1",
     "http-errors": "^2.0.0",
+    "jsonwebtoken": "^9.0.0",
     "knex": "^2.4.2",
     "morgan": "~1.9.1",
     "mysql2": "^3.0.1",
