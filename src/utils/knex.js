@@ -11,6 +11,8 @@ export default knex({
     user: configs.mysql.user,
     password: configs.mysql.password,
     database: configs.mysql.database,
+    supportBigNumbers: true,
+    bigNumberStrings: true,
   },
   // 打印错误
   log: {

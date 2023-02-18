@@ -13,7 +13,7 @@ const jwtAuth = jwt({
   secret: config.authSecretKey,
   algorithms: ["HS256"],
 }).unless({
-  path: ["/api/v1/auth/login"],
+  path: ["/auth/login", "/auth/logout", "/auth/captcha"],
 });
 
 export default jwtAuth;
