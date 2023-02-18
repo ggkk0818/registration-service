@@ -24,23 +24,32 @@ class BaseDao {
   async list(query, start = 0, limit = 10) {
     let list = await knex(this.table)
       .select(this.props)
-      .where(query)
+      .where(this.props2fields(query))
       .whereNot("is_del", "=", 1)
       .offset(start)
       .limit(limit);
     const total = await knex(this.table)
       .count("id as CNT")
-      .where(query)
+      .where(this.props2fields(query))
       .whereNot("is_del", "=", 1);
     return {
       records: list,
-      total: total[0].CNT,
+      total: parseInt(total[0].CNT) || 0,
     };
+  }
+
+  // 根据id查询
+  findById(id) {
+    return knex(this.table)
+      .select(this.props)
+      .where("id", "=", id)
+      .whereNot("is_del", "=", 1)
+      .first();
   }
 
   // 新增
   insert(params) {
-    return knex(this.table).insert(this.props2fields(params));
+    return knex(this.table).insert({ ...this.defaultValues, ...this.props2fields(params) });
   }
 
   // 更改
@@ -60,7 +69,7 @@ class BaseDao {
    * @returns {Object} 数据库字段对象
    */
   props2fields(obj) {
-    let val = { ...this.defaultValues };
+    let val = {};
     if (this.props != null) {
       Object.entries(this.props).forEach(([key, field]) => {
         if (obj[key] !== undefined) {

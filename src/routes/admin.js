@@ -4,9 +4,9 @@ import { resSuccess } from "../utils/utils.js";
 const router = express.Router();
 
 router.get("/", async (req, res, next) => {
-  const { start, limit, ...query } = req.query;
+  const { pageNo, pageSize, ...query } = req.query;
   try {
-    const data = await userDao.list(query, start, limit);
+    const data = await userDao.list(query, (pageNo - 1) * pageSize, pageSize);
     res.send(resSuccess(data));
   } catch (err) {
     next(err);
