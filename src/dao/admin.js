@@ -8,7 +8,7 @@ class AdminDao extends BaseDao {
       password: "password",
       nickName: "nick_name",
       email: "email",
-      phone: "phone",
+      mobile: "mobile",
       remark: "remark",
       roleId: "role_id",
       isEnabled: "is_enabled",
