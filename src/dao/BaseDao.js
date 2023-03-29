@@ -49,7 +49,7 @@ class BaseDao {
 
   // 新增
   insert(params) {
-    return knex(this.table).insert({ ...this.defaultValues, ...this.props2fields(params) });
+    return knex(this.table).insert({ ...this.defaultValues, ...this.props2fields(params) }, "id");
   }
 
   // 更改

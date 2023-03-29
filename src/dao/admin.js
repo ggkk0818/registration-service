@@ -17,6 +17,9 @@ class AdminDao extends BaseDao {
       createUser: "create_user",
       updateTime: "update_time",
       updateUser: "update_user",
+    }, {
+      is_enabled: 1,
+      is_del: 0
     });
   }
 
