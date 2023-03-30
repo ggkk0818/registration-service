@@ -15,9 +15,9 @@ class BaseDao {
     this.defaultValues = defaultValues;
   }
 
-  // 查找
+  // 全量查询
   all() {
-    return knex(this.table).select(this.props);
+    return knex(this.table).select(this.props).whereNot("is_del", "=", 1);
   }
 
   // 分页查询

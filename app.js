@@ -11,6 +11,7 @@ import jwtAuth from "./src/utils/auth.js";
 import authRouter from "./src/routes/auth.js";
 import usersRouter from "./src/routes/users.js";
 import adminRouter from "./src/routes/admin.js";
+import departmentRouter from "./src/routes/department.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
@@ -26,6 +27,8 @@ app.use("/users", jwtAuth);
 app.use("/users", usersRouter);
 app.use("/admin", jwtAuth);
 app.use("/admin", adminRouter);
+app.use("/department", jwtAuth);
+app.use("/department", departmentRouter);
 // 支持history模式
 // app.use(
 //   history({
