@@ -9,7 +9,7 @@ import logger from "./logger.js";
 import { resError } from "./src/utils/utils.js";
 import jwtAuth from "./src/utils/auth.js";
 import authRouter from "./src/routes/auth.js";
-import usersRouter from "./src/routes/users.js";
+import doctorRouter from "./src/routes/doctor.js";
 import adminRouter from "./src/routes/admin.js";
 import departmentRouter from "./src/routes/department.js";
 const __filename = fileURLToPath(import.meta.url);
@@ -23,12 +23,12 @@ app.use(cookieParser());
 
 app.use("/auth", jwtAuth);
 app.use("/auth", authRouter);
-app.use("/users", jwtAuth);
-app.use("/users", usersRouter);
 app.use("/admin", jwtAuth);
 app.use("/admin", adminRouter);
 app.use("/department", jwtAuth);
 app.use("/department", departmentRouter);
+app.use("/doctor", jwtAuth);
+app.use("/doctor", doctorRouter);
 // 支持history模式
 // app.use(
 //   history({
