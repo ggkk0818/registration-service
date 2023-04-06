@@ -12,6 +12,10 @@ class BaseDao {
   constructor(tableName, props, defaultValues) {
     this.table = tableName;
     this.props = props;
+    this.propsWithTable = props ? Object.entries(props).map(([key, val]) => [key, `${tableName}.${val}`]).reduce((obj, [key, val]) => {
+      obj[key] = val;
+      return obj;
+    }, {}) : undefined;
     this.defaultValues = defaultValues;
   }
 
@@ -66,14 +70,15 @@ class BaseDao {
   /**
    * 将实体类对象转为数据库字段对象
    * @param {*} obj 实体类对象
+   * @param {Boolean} withTable 字段名是否带表名
    * @returns {Object} 数据库字段对象
    */
-  props2fields(obj) {
+  props2fields(obj, withTable = false) {
     let val = {};
     if (this.props != null) {
       Object.entries(this.props).forEach(([key, field]) => {
         if (obj[key] !== undefined) {
-          val[field] = obj[key];
+          val[withTable ? `${this.tableName}.${field}` : field] = obj[key];
         }
       });
     }

@@ -29,8 +29,8 @@ router.post("/", async (req, res, next) => {
   try {
     const id = generateId();
     const data = await userDao.insert({
-      id,
       ...params,
+      id,
       createTime: new Date(),
       createUser: user.username,
       updateTime: new Date(),

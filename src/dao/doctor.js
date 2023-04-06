@@ -1,5 +1,5 @@
 import BaseDao from "./BaseDao.js";
-
+import knex from "../utils/knex.js";
 class AdminDao extends BaseDao {
   constructor() {
     super("reg_doctor", {
@@ -23,6 +23,26 @@ class AdminDao extends BaseDao {
       is_enabled: 1,
       is_del: 0
     });
+  }
+
+  // 分页查询
+  async list(query, start = 0, limit = 10) {
+    let list = await knex(this.table)
+      .select(this.propsWithTable)
+      .leftJoin('reg_department', 'reg_doctor.dept_id', 'reg_department.id')
+      .select({ deptName: 'reg_department.name' })
+      .where(this.props2fields(query, true))
+      .whereNot("reg_doctor.is_del", "=", 1)
+      .offset(start)
+      .limit(limit);
+    const total = await knex(this.table)
+      .count("id as CNT")
+      .where(this.props2fields(query))
+      .whereNot("is_del", "=", 1);
+    return {
+      records: list,
+      total: parseInt(total[0].CNT) || 0,
+    };
   }
 
   async findByName(name) {
