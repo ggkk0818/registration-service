@@ -10,6 +10,7 @@ import { resError } from "./src/utils/utils.js";
 import jwtAuth from "./src/utils/auth.js";
 import authRouter from "./src/routes/auth.js";
 import doctorRouter from "./src/routes/doctor.js";
+import patientRouter from "./src/routes/patient.js";
 import adminRouter from "./src/routes/admin.js";
 import departmentRouter from "./src/routes/department.js";
 const __filename = fileURLToPath(import.meta.url);
@@ -20,15 +21,21 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-
+// 用户认证
 app.use("/auth", jwtAuth);
 app.use("/auth", authRouter);
+// 系统用户
 app.use("/admin", jwtAuth);
 app.use("/admin", adminRouter);
+// 科室管理
 app.use("/department", jwtAuth);
 app.use("/department", departmentRouter);
+// 医生管理
 app.use("/doctor", jwtAuth);
 app.use("/doctor", doctorRouter);
+// 患者管理
+app.use("/patient", jwtAuth);
+app.use("/patient", patientRouter);
 // 支持history模式
 // app.use(
 //   history({

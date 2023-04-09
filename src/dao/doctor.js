@@ -1,6 +1,6 @@
 import BaseDao from "./BaseDao.js";
 import knex from "../utils/knex.js";
-class AdminDao extends BaseDao {
+class DoctorDao extends BaseDao {
   constructor() {
     super("reg_doctor", {
       id: "id",
@@ -50,4 +50,4 @@ class AdminDao extends BaseDao {
     return data?.records?.[0];
   }
 }
-export default new AdminDao();
+export default new DoctorDao();
