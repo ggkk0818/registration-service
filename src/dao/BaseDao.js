@@ -56,6 +56,13 @@ class BaseDao {
     return knex(this.table).insert({ ...this.defaultValues, ...this.props2fields(params) }, "id");
   }
 
+  // 批量新增
+  batchInsert(arr) {
+    return knex.batchInsert(this.table, arr.map(item => {
+      return { ...this.defaultValues, ...this.props2fields(item) };
+    }), 100).returning('id')
+  }
+
   // 更改
   update(id, params) {
     return knex(this.table)
