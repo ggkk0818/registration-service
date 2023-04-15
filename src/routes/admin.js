@@ -27,10 +27,15 @@ router.post("/", async (req, res, next) => {
   const params = req.body;
   const user = req.auth;
   try {
+    // 密码加密
+    if (params && params.password) {
+      params.password = sha1(params.password)
+    }
     const id = generateId();
     const data = await userDao.insert({
       ...params,
       id,
+      roleId: "admin",
       createTime: new Date(),
       createUser: user.username,
       updateTime: new Date(),
