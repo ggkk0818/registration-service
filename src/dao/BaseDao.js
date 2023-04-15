@@ -51,6 +51,14 @@ class BaseDao {
       .first();
   }
 
+  // 根据id数组查询
+  findByIds(ids) {
+    return knex(this.table)
+      .select(this.props)
+      .whereIn("id", ids)
+      .whereNot("is_del", "=", 1);
+  }
+
   // 新增
   insert(params) {
     return knex(this.table).insert({ ...this.defaultValues, ...this.props2fields(params) }, "id");
