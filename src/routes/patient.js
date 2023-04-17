@@ -7,6 +7,12 @@ router.get("/", async (req, res, next) => {
   const { pageNo, pageSize, ...query } = req.query;
   try {
     const data = await patientDao.list(query, (pageNo - 1) * pageSize, pageSize);
+    if (data?.records) {
+      // 返回值去除密码字段
+      data.records.forEach(item => {
+        delete item.password;
+      });
+    }
     res.send(resSuccess(data));
   } catch (err) {
     next(err);
@@ -27,6 +33,10 @@ router.post("/", async (req, res, next) => {
   const params = req.body;
   const user = req.auth;
   try {
+    // 密码加密
+    if (params && params.password) {
+      params.password = sha1(params.password)
+    }
     const id = generateId();
     const data = await patientDao.insert({
       ...params,
@@ -46,6 +56,10 @@ router.put("/", async (req, res, next) => {
   const params = req.body;
   const user = req.auth;
   try {
+    // 密码加密
+    if (params && params.password) {
+      params.password = sha1(params.password)
+    }
     delete params.createTime
     delete params.createUser
     const data = await patientDao.update(params.id, {

@@ -1,16 +1,31 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import userDao from "../dao/admin.js";
+import patientDao from "../dao/patient.js";
 import config from "../../config.js";
 import { resSuccess, resError } from "../utils/utils.js";
+import { USER_ROLE } from "../utils/consts.js";
 import { sha1 } from "../utils/encrypt.js";
 import svgCaptcha from "svg-captcha";
 const router = express.Router();
+// 登录类型
+const LOGIN_TYPE = {
+  PATIENT: 1, // 患者
+  ADMIN: 2 // 管理员&医生
+};
 
 router.post("/login", async function (req, res, next) {
   try {
     const { username, password } = req.body;
-    let user = await userDao.findByName(username);
+    const loginType = req.body && req.body.loginType || LOGIN_TYPE.PATIENT;
+    let user = null;
+    if (loginType === LOGIN_TYPE.ADMIN) {
+      // 查系统用户表（管理员、医生）
+      user = await userDao.findByName(username);
+    } else {
+      // 查患者表
+      user = await patientDao.findByName(username);
+    }
     console.log(user.id.toString());
     if (user == null) {
       // 用户不存在
@@ -23,6 +38,7 @@ router.post("/login", async function (req, res, next) {
         {
           id: user.id,
           username: user.name,
+          roleId: loginType === LOGIN_TYPE.ADMIN ? user.roleId : USER_ROLE.PATIENT
         },
         config.authSecretKey,
         {
