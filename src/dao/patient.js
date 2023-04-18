@@ -22,5 +22,10 @@ class PatientDao extends BaseDao {
       is_del: 0
     });
   }
+
+  async findByName(name) {
+    const data = await this.list({ name });
+    return data?.records?.[0];
+  }
 }
 export default new PatientDao();

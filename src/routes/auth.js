@@ -26,11 +26,12 @@ router.post("/login", async function (req, res, next) {
       // 查患者表
       user = await patientDao.findByName(username);
     }
-    console.log(user.id.toString());
     if (user == null) {
       // 用户不存在
       res.send(resError(null, 400, "用户名或密码错误"));
       return;
+    } else if (loginType !== LOGIN_TYPE.ADMIN) {
+      user.roleId = USER_ROLE.PATIENT
     }
     console.log(username, sha1(password), user);
     if (sha1(password) === user.password) {
@@ -62,14 +63,22 @@ router.post("/login", async function (req, res, next) {
 
 router.get("/info", async function (req, res, next) {
   try {
-    const { id } = req.auth || {};
-    let user = await userDao.findById(id);
+    const { id, roleId } = req.auth || {};
+    let user = null;
+    if (roleId === USER_ROLE.ADMIN) {
+      // 查系统用户表（管理员、医生）
+      user = await userDao.findById(id);
+    } else {
+      // 查患者表
+      user = await patientDao.findById(id);
+    }
     console.log(user);
     if (user == null) {
       // 用户不存在
       res.send(resError(null, 500, "用户未找到"));
       return;
     }
+    user.roleId = roleId
     const { password: pwd, ...others } = user;
     res.send(resSuccess(others, 200, "登录成功"));
   } catch (err) {
