@@ -78,6 +78,7 @@ router.get("/info", async function (req, res, next) {
       res.send(resError(null, 500, "用户未找到"));
       return;
     }
+    user.nickName = user.nickName || user.realName
     user.roleId = roleId
     const { password: pwd, ...others } = user;
     res.send(resSuccess(others, 200, "登录成功"));
