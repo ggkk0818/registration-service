@@ -1,5 +1,6 @@
 import express from "express";
 import doctorDao from "../dao/doctor.js";
+import scheduleDao from "../dao/schedule.js";
 import userDao from "../dao/admin.js";
 import { sha1 } from "../utils/encrypt.js";
 import { resSuccess, generateId } from "../utils/utils.js";
@@ -28,6 +29,8 @@ router.get("/:id", async (req, res, next) => {
     // 返回值去除密码字段
     if (data) {
       delete data.password;
+      const scheduleList = await scheduleDao.listByDocId(data.id);
+      data.scheduleList = scheduleList || [];
     }
     res.send(resSuccess(data));
   } catch (err) {
@@ -102,6 +105,33 @@ router.delete("/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
     await doctorDao.delete(id);
+    res.send(resSuccess());
+  } catch (err) {
+    next(err);
+  }
+});
+// 编辑排班
+router.put("/schedule", async (req, res, next) => {
+  const params = req.body || {};
+  const user = req.auth;
+  try {
+    const { docId, scheduleList } = params;
+    await scheduleDao.deleteByDocId(docId);
+    if (scheduleList && scheduleList.length > 0) {
+      const now = new Date();
+      const rows = scheduleList.map(item => ({
+        docId,
+        startTime: item.startTime,
+        endTime: item.endTime,
+        dayOfWeek: item.dayOfWeek,
+        resourceCount: item.resourceCount,
+        createTime: item.createTime || now,
+        createUser: item.createUser || user.username,
+        updateTime: now,
+        updateUser: user.username,
+      }));
+      await scheduleDao.batchInsert(rows);
+    }
     res.send(resSuccess());
   } catch (err) {
     next(err);
