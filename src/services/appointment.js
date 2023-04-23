@@ -1,6 +1,9 @@
 import Redlock from "redlock";
+import moment from "moment";
 import redis from "../utils/redis.js";
-
+import scheduleDao from "../dao/schedule.js";
+import resourceDao from "../dao/resource.js";
+import logger from "../../logger.js";
 const DOCTOR_KEY_PREFIX = "DOCTOR";
 const RESOURCE_KEY_PREFIX = "RESOURCE";
 const RESOURCECACHE_KEY_PREFIX = "RESOURCECACHE";
@@ -54,9 +57,35 @@ export async function removeResourceCache(docId, patientId) {
   return await redis.del(key)
 }
 
+/**
+ * 创建号源
+ * @param {*} dateStr 
+ */
+export async function generateResource(dateStr) {
+  const date = moment(dateStr);
+  const dayOfWeek = date.isoWeekday();
+  const scheduleDate = date.toDate();
+  const scheduleList = await scheduleDao.all();
+  const resourceList = (scheduleList || [])
+    .filter(item => item.dayOfWeek === dayOfWeek)
+    .map(item => {
+      return {
+        scheduleDate: scheduleDate,
+        docId: item.docId,
+        docScheduleId: item.id,
+        startTime: item.startTime,
+        endTime: item.endTime,
+        resourceCount: item.resourceCount
+      };
+    });
+  await resourceDao.saveResource(resourceList);
+  logger.info(`已生成${resourceList.length}个号源`)
+}
+
 export default {
   lockDoctorResource,
   addResourceCache,
   getResourceCache,
-  removeResourceCache
+  removeResourceCache,
+  generateResource
 }

@@ -1,4 +1,5 @@
 import BaseDao from "./BaseDao.js";
+import knex from "../utils/knex.js";
 
 class PatientDao extends BaseDao {
   constructor() {
@@ -22,11 +23,11 @@ class PatientDao extends BaseDao {
     let list = await knex(this.table)
       .select(this.propsWithTable)
       .leftJoin('reg_doctor', 'reg_appointment.doc_id', 'reg_doctor.id')
-      .select({ docName: 'reg_doctor.realName' })
+      .select({ docName: 'reg_doctor.real_name' })
       .leftJoin('reg_department', 'reg_doctor.dept_id', 'reg_department.id')
       .select({ deptName: 'reg_department.name' })
       .leftJoin('reg_user', 'reg_appointment.user_id', 'reg_user.id')
-      .select({ patientName: 'reg_user.realName' })
+      .select({ patientName: 'reg_user.real_name' })
       .where(this.props2fields(query, true))
       .offset(start)
       .limit(limit);

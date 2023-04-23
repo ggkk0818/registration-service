@@ -21,7 +21,11 @@ class BaseDao {
 
   // 全量查询
   all() {
-    return knex(this.table).select(this.props).whereNot("is_del", "=", 1);
+    let query = knex(this.table).select(this.props);
+    if (this.props && Object.values(this.props).includes("is_del")) {
+      query = query.whereNot("is_del", "=", 1);
+    }
+    return query;
   }
 
   // 分页查询

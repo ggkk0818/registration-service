@@ -1,4 +1,5 @@
 import express from "express";
+import moment from "moment";
 import appointmentDao from "../dao/appointment.js";
 import appointmentService from "../services/appointment.js";
 import { resSuccess, generateId } from "../utils/utils.js";
@@ -64,6 +65,16 @@ router.delete("/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
     await appointmentDao.delete(id);
+    res.send(resSuccess());
+  } catch (err) {
+    next(err);
+  }
+});
+// 生成当天号源
+router.post("/createResource", async (req, res, next) => {
+  const user = req.auth;
+  try {
+    await appointmentService.generateResource(moment().format("YYYY-MM-DD"), user);
     res.send(resSuccess());
   } catch (err) {
     next(err);
