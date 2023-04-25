@@ -15,6 +15,15 @@ class ResourceDao extends BaseDao {
   }
 
   /**
+   * 按日期查询所有号源
+   * @returns 
+   */
+  allByDate(date) {
+    let query = knex(this.table).select(this.props).where("schedule_date", "=", date);
+    return query;
+  }
+
+  /**
    * 删除数据并批量插入
    * @param {*} arr 
    * @returns 

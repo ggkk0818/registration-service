@@ -1,7 +1,9 @@
 import express from "express";
+import moment from "moment";
 import doctorDao from "../dao/doctor.js";
 import scheduleDao from "../dao/schedule.js";
 import userDao from "../dao/admin.js";
+import appointmentService from "../services/appointment.js";
 import { sha1 } from "../utils/encrypt.js";
 import { resSuccess, generateId } from "../utils/utils.js";
 const router = express.Router();
@@ -10,6 +12,25 @@ router.get("/", async (req, res, next) => {
   const { pageNo, pageSize, ...query } = req.query;
   try {
     const data = await doctorDao.list(query, (pageNo - 1) * pageSize, pageSize);
+    if (data?.records) {
+      // 返回值去除密码字段
+      data.records.forEach(item => {
+        delete item.password;
+      });
+    }
+    res.send(resSuccess(data));
+  } catch (err) {
+    next(err);
+  }
+});
+// 查询医生号源列表
+router.get("/resource", async (req, res, next) => {
+  const { pageNo, pageSize, ...query } = req.query;
+  const user = req.auth;
+  try {
+    // 关联查询当天号源
+    const date = moment().startOf('day').toDate();
+    const data = await appointmentService.queryDoctorResourceList(date, user, query, (pageNo - 1) * pageSize, pageSize)
     if (data?.records) {
       // 返回值去除密码字段
       data.records.forEach(item => {
@@ -137,4 +158,5 @@ router.put("/schedule", async (req, res, next) => {
     next(err);
   }
 });
+
 export default router;

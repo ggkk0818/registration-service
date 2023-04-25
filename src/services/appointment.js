@@ -1,6 +1,7 @@
 import Redlock from "redlock";
 import moment from "moment";
 import redis from "../utils/redis.js";
+import doctorDao from "../dao/doctor.js";
 import scheduleDao from "../dao/schedule.js";
 import resourceDao from "../dao/resource.js";
 import logger from "../../logger.js";
@@ -82,10 +83,44 @@ export async function generateResource(dateStr) {
   logger.info(`已生成${resourceList.length}个号源`)
 }
 
+/**
+ * 按日期查询医生号源列表
+ * @param {Date} date 日期
+ * @param {*} user 登录用户
+ * @param {*} query 查询条件
+ * @param {*} start 起始位置
+ * @param {*} limit 每页条数
+ */
+export async function queryDoctorResourceList(date, user, query, start = 0, limit = 10) {
+  console.log("按日期查询医生号源列表", date, user, query, start, limit);
+  const doctorRes = await doctorDao.list(query, start, limit);
+  logger.info("医生列表", doctorRes);
+  if (doctorRes?.records) {
+    const resourceList = await resourceDao.allByDate(date);
+    const isSame = (cache, resource) => {
+      return moment(cache.startTime).isSame(resource.startTime) && moment(cache.endTime).isSame(resource.endTime) && cache.dayOfWeek === resource.dayOfWeek;
+    };
+    doctorRes.records.forEach(doctor => {
+      const cache = getResourceCache(doctor.id, user.id);
+      doctor.diagnoseDate = date;
+      doctor.resourceCount = cache ? 1 : 0;
+      doctor.resourceList = resourceList.filter(item => item.docId === doctor.id).map(item => {
+        doctor.resourceCount += item.resourceCount || 0;
+        return {
+          ...item,
+          resourceCount: cache && isSame(cache, item) ? item.resourceCount + 1 : item.resourceCount
+        };
+      });
+    });
+  }
+  return doctorRes;
+}
+
 export default {
   lockDoctorResource,
   addResourceCache,
   getResourceCache,
   removeResourceCache,
-  generateResource
+  generateResource,
+  queryDoctorResourceList
 }
