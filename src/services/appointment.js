@@ -1,5 +1,6 @@
 import Redlock from "redlock";
 import moment from "moment";
+import config from "../../config.js";
 import redis from "../utils/redis.js";
 import doctorDao from "../dao/doctor.js";
 import scheduleDao from "../dao/schedule.js";
@@ -8,10 +9,46 @@ import logger from "../../logger.js";
 const DOCTOR_KEY_PREFIX = "DOCTOR";
 const RESOURCE_KEY_PREFIX = "RESOURCE";
 const RESOURCECACHE_KEY_PREFIX = "RESOURCECACHE";
-const redlock = new Redlock([redis], {
+// 临时内存锁
+const lockMap = {};
+const requireLock = (key, timeout = 3000) => {
+  return new Promise((resolve, reject) => {
+    const createLock = () => {
+      let timer;
+      const unlock = () => {
+        clearTimeout(timer);
+        delete lockMap[key];
+      };
+      // 超时自动解锁
+      timer = setTimeout(unlock, timeout);
+      lockMap[key] = { unlock };
+      resolve(lockMap[key]);
+    };
+    if (!lockMap[key]) {
+      createLock();
+    } else {
+      let retryTimes = 5;
+      const timer = setInterval(() => {
+        if (!lockMap[key]) {
+          createLock();
+          clearInterval(timer);
+        } else {
+          // 消耗重试次数
+          retryTimes--;
+          if (retryTimes <= 0) {
+            reject();
+            clearInterval(timer);
+          }
+        }
+      }, 200);
+    }
+  });
+};
+// redis分布式锁
+const redlock = config.redisEnabled ? new Redlock([redis], {
   retryDelay: 200, // time in ms
   retryCount: 5,
-});
+}) : { acquire: requireLock };
 
 /**
  * 获取医生号源锁
