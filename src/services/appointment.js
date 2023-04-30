@@ -131,7 +131,7 @@ export async function generateResource(dateStr) {
 export async function queryDoctorResourceList(date, user, query, start = 0, limit = 10) {
   console.log("按日期查询医生号源列表", date, user, query, start, limit);
   const doctorRes = await doctorDao.list(query, start, limit);
-  logger.info("医生列表", doctorRes);
+  console.log("医生列表", doctorRes);
   if (doctorRes?.records) {
     const resourceList = await resourceDao.allByDate(date);
     const isSame = (cache, resource) => {
@@ -152,6 +152,15 @@ export async function queryDoctorResourceList(date, user, query, start = 0, limi
   }
   return doctorRes;
 }
+/**
+ * 增量更新号源数量
+ * @param {*} resourceId 号源id
+ * @param {*} count 数量
+ * @returns 
+ */
+export async function updateResourceCount(resourceId, count) {
+  return resourceDao.updateResourceCount(resourceId, count);
+}
 
 export default {
   lockDoctorResource,
@@ -159,5 +168,6 @@ export default {
   getResourceCache,
   removeResourceCache,
   generateResource,
-  queryDoctorResourceList
+  queryDoctorResourceList,
+  updateResourceCount
 }

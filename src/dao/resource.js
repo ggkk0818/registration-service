@@ -36,5 +36,14 @@ class ResourceDao extends BaseDao {
       }), 100);
     });
   }
+  /**
+   * 增量更新号源数量
+   * @param {*} id 号源id
+   * @param {*} additionalCount 添加或减少的数量
+   * @returns 
+   */
+  updateResourceCount(id, additionalCount) {
+    return knex(this.table).update(knex.raw("set resource_count = resource_count" + (additionalCount >= 0 ? "+" : "") + additionalCount)).where("id", "=", id);
+  }
 }
 export default new ResourceDao();
