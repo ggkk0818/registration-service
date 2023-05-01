@@ -97,7 +97,7 @@ class BaseDao {
     if (this.props != null) {
       Object.entries(this.props).forEach(([key, field]) => {
         if (obj[key] !== undefined) {
-          val[withTable ? `${this.tableName}.${field}` : field] = obj[key];
+          val[withTable ? `${this.table}.${field}` : field] = obj[key];
         }
       });
     }

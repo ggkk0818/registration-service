@@ -56,7 +56,7 @@ const redlock = config.redisEnabled ? new Redlock([redis], {
  * @returns 
  */
 export function lockDoctorResource(docId) {
-  return redlock.acquire([`${DOCTOR_KEY_PREFIX}_docId`], 3000);
+  return redlock.acquire([`${DOCTOR_KEY_PREFIX}_${docId}`], 3000);
 }
 
 /**
@@ -135,10 +135,12 @@ export async function queryDoctorResourceList(date, user, query, start = 0, limi
   if (doctorRes?.records) {
     const resourceList = await resourceDao.allByDate(date);
     const isSame = (cache, resource) => {
-      return moment(cache.startTime).isSame(resource.startTime) && moment(cache.endTime).isSame(resource.endTime) && cache.dayOfWeek === resource.dayOfWeek;
+      return cache.docScheduleId === resource.docScheduleId;
     };
-    doctorRes.records.forEach(doctor => {
-      const cache = getResourceCache(doctor.id, user.id);
+    await doctorRes.records.reduce(async (prev, doctor) => {
+      await prev
+      const cache = await getResourceCache(doctor.id, user.id);
+      console.log("医生缓存", doctor.realName, cache);
       doctor.diagnoseDate = date;
       doctor.resourceCount = cache ? 1 : 0;
       doctor.resourceList = resourceList.filter(item => item.docId === doctor.id).map(item => {
@@ -148,7 +150,7 @@ export async function queryDoctorResourceList(date, user, query, start = 0, limi
           resourceCount: cache && isSame(cache, item) ? item.resourceCount + 1 : item.resourceCount
         };
       });
-    });
+    }, undefined);
   }
   return doctorRes;
 }

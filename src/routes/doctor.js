@@ -30,7 +30,7 @@ router.get("/resource", async (req, res, next) => {
   try {
     // 关联查询当天号源
     const date = moment().startOf('day').toDate();
-    const data = await appointmentService.queryDoctorResourceList(date, user, query, (pageNo - 1) * pageSize, pageSize)
+    const data = await appointmentService.queryDoctorResourceList(date, user, query, ((pageNo - 1) * pageSize) || 0, pageSize)
     if (data?.records) {
       // 返回值去除密码字段
       data.records.forEach(item => {

@@ -1,7 +1,7 @@
 import BaseDao from "./BaseDao.js";
 import knex from "../utils/knex.js";
 
-class PatientDao extends BaseDao {
+class AppointmentDao extends BaseDao {
   constructor() {
     super("reg_appointment", {
       id: "id",
@@ -45,4 +45,4 @@ class PatientDao extends BaseDao {
     return knex(this.table).where("id", "=", id).update({ status });
   }
 }
-export default new PatientDao();
+export default new AppointmentDao();

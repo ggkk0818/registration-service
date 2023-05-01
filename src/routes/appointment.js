@@ -1,8 +1,10 @@
 import express from "express";
 import moment from "moment";
 import appointmentDao from "../dao/appointment.js";
+import resourceDao from "../dao/resource.js";
 import appointmentService from "../services/appointment.js";
-import { resSuccess, generateId } from "../utils/utils.js";
+import { resSuccess, resError, generateId } from "../utils/utils.js";
+import { APPOINTMENT_STATUS } from "../utils/consts.js";
 const router = express.Router();
 // 查询预约列表
 router.get("/", async (req, res, next) => {
@@ -87,14 +89,21 @@ router.post("/prepare", async (req, res, next) => {
   let lock = null;
   try {
     const { id: resourceId, docId, scheduleDate, docScheduleId, startTime, endTime } = params;
-    const cache = appointmentService.getResourceCache(docId, user.id);
+    const cache = await appointmentService.getResourceCache(docId, user.id);
+    console.log("预约缓存", cache);
     // 有预约缓存，直接返回
     if (cache && cache.docScheduleId === docScheduleId) {
-      res.send(resSuccess(data));
+      res.send(resSuccess(cache));
       return;
     }
     // 锁定医生号源
     lock = await appointmentService.lockDoctorResource(docId);
+    // 查询号源数量
+    const resource = await resourceDao.findById(resourceId);
+    if (!resource || resource.resourceCount < 1) {
+      res.send(resError(null, 400, "号源不足，请预约其他时段。"));
+      return;
+    }
     // 先释放缓存的号源
     if (cache) {
       await appointmentService.updateResourceCount(cache.resourceId, 1);
@@ -106,9 +115,9 @@ router.post("/prepare", async (req, res, next) => {
       docId,
       docScheduleId,
       patientId: user.id,
-      diagnoseTime: startTime,
+      diagnoseTime: moment(startTime).toDate(),
       diagnoseResult: null,
-      status: 0,
+      status: APPOINTMENT_STATUS.LOCK,
       createTime: new Date(),
       createUser: user.username,
       updateTime: new Date(),
@@ -116,17 +125,45 @@ router.post("/prepare", async (req, res, next) => {
     };
     await appointmentService.addResourceCache(row);
     // 更新号源数量
+    console.log("prepare号源", row);
     await appointmentService.updateResourceCount(resourceId, -1);
-    // 解锁医生号源
-    lock.unlock();
     // 返回号源信息
     res.send(resSuccess(row));
   } catch (err) {
+    console.log(err);
+    next(err);
+  } finally {
     if (lock) {
-      try {
+    // 解锁医生号源
+    try {
         lock.unlock();
       } finally { }
     }
+  }
+});
+// 预约挂号
+router.post("/deal", async (req, res, next) => {
+  const params = req.body;
+  const user = req.auth;
+  try {
+    const { resourceId, docId, docScheduleId, createTime } = params;
+    const cache = await appointmentService.getResourceCache(docId, user.id);
+    const isExpire = !createTime || moment(createTime).add(15, 'minutes').isBefore(Date.now());
+    console.log("预约挂号cache", cache, isExpire);
+    // 判断号源过期或与缓存不符的情况
+    if (!cache || cache.docScheduleId !== docScheduleId || isExpire) {
+      res.send(resError(null, 400, "号源已失效，请重新预约。"));
+      return;
+    }
+    // 更新号源状态
+    cache.status = APPOINTMENT_STATUS.RESERVED
+    cache.updateTime = new Date()
+    // 保存号源
+    const data = await appointmentDao.insert(cache);
+    // 清除缓存
+    await appointmentService.removeResourceCache(docId, user.id);
+    res.send(resSuccess(data));
+  } catch(err) {
     next(err);
   }
 });

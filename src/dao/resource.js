@@ -14,6 +14,14 @@ class ResourceDao extends BaseDao {
     });
   }
 
+  // 根据id查询
+  findById(id) {
+    return knex(this.table)
+      .select(this.props)
+      .where("id", "=", id)
+      .first();
+  }
+
   /**
    * 按日期查询所有号源
    * @returns 
@@ -43,7 +51,11 @@ class ResourceDao extends BaseDao {
    * @returns 
    */
   updateResourceCount(id, additionalCount) {
-    return knex(this.table).update(knex.raw("set resource_count = resource_count" + (additionalCount >= 0 ? "+" : "") + additionalCount)).where("id", "=", id);
+    console.log("updateResourceCount", id, additionalCount);
+    console.log("set resource_count = resource_count" + (additionalCount >= 0 ? "+" : "") + additionalCount);
+    return knex(this.table).update({
+      resource_count: knex.raw('??' + (additionalCount >= 0 ? "+" : "") + additionalCount, ['resource_count'])
+    }).where("id", "=", id);
   }
 }
 export default new ResourceDao();
