@@ -67,6 +67,7 @@ app.use(function (req, res, next) {
 // 处理非404的错误（throw 出来的错误)
 const _errorHandler = (err, req, res, next) => {
   logger.error(`${req.method} ${req.originalUrl} ` + err.message);
+  console.log(err);
   switch (err && err.name) {
     case "UnauthorizedError":
       res.send(resError(null, 11001, "登录失效，请重新登录。"));

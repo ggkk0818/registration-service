@@ -1,3 +1,8 @@
+// 登录类型
+export const LOGIN_TYPE = {
+  PATIENT: 1, // 患者
+  ADMIN: 2 // 管理员&医生
+};
 // 公告类型
 export const ANNOUNCEMENT_TYPE = {
   SYSTEM: 1, // 系统
@@ -15,5 +20,6 @@ export const APPOINTMENT_STATUS = {
   LOCK: 0, // 锁定号源
   RESERVED: 1, // 预约成功
   DIAGNOSE_HOLD: 2, // 候诊
-  DIAGNOSE_DONE: 3 // 诊断完成
+  DIAGNOSE_DONE: 3, // 诊断完成
+  CANCEL: 4 // 已取消
 };

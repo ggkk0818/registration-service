@@ -94,7 +94,7 @@ class BaseDao {
    */
   props2fields(obj, withTable = false) {
     let val = {};
-    if (this.props != null) {
+    if (this.props != null && obj != null) {
       Object.entries(this.props).forEach(([key, field]) => {
         if (obj[key] !== undefined) {
           val[withTable ? `${this.table}.${field}` : field] = obj[key];
@@ -110,11 +110,11 @@ class BaseDao {
     };
     if (this.props != null) {
       Object.entries(this.props).forEach(([key, field]) => {
-        if (obj[field] !== undefined) {
+        if (obj && obj[field] !== undefined) {
           val[key] = obj[field];
-          // 删除数据库字段
-          delete val[field];
         }
+        // 删除数据库字段
+        delete val[field];
       });
     }
     return val;

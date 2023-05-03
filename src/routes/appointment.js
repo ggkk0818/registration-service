@@ -9,8 +9,41 @@ const router = express.Router();
 // 查询预约列表
 router.get("/", async (req, res, next) => {
   const { pageNo, pageSize, ...query } = req.query;
+  console.log("查询参数", query);
   try {
     const data = await appointmentDao.list(query, (pageNo - 1) * pageSize, pageSize);
+    res.send(resSuccess(data));
+  } catch (err) {
+    next(err);
+  }
+});
+// 患者查询我的预约列表
+router.get("/my", async (req, res, next) => {
+  const { pageNo, pageSize, ...query } = req.query;
+  const user = req.auth;
+  const patientQuery = {
+    ...query,
+    userId: user.id
+  };
+  console.log("查询参数", query, patientQuery);
+  try {
+    const data = await appointmentDao.list(patientQuery, (pageNo - 1) * pageSize, pageSize);
+    res.send(resSuccess(data));
+  } catch (err) {
+    next(err);
+  }
+});
+// 医生查询患者预约列表
+router.get("/patient", async (req, res, next) => {
+  const { pageNo, pageSize, ...query } = req.query;
+  const user = req.auth;
+  const patientQuery = {
+    ...query,
+    docId: user.id
+  };
+  console.log("查询参数", query, patientQuery);
+  try {
+    const data = await appointmentDao.list(patientQuery, (pageNo - 1) * pageSize, pageSize);
     res.send(resSuccess(data));
   } catch (err) {
     next(err);
@@ -66,7 +99,7 @@ router.put("/", async (req, res, next) => {
 router.delete("/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
-    await appointmentDao.delete(id);
+    await appointmentDao.updateStatus(id, APPOINTMENT_STATUS.CANCEL);
     res.send(resSuccess());
   } catch (err) {
     next(err);
@@ -109,13 +142,16 @@ router.post("/prepare", async (req, res, next) => {
       await appointmentService.updateResourceCount(cache.resourceId, 1);
     }
     // 创建号源缓存
+    const diagnoseTime = moment(scheduleDate).startOf("day");
+    const time = moment(startTime);
+    diagnoseTime.add(moment.duration(time.format("HH:mm")));
     const row = {
       id: generateId(),
       resourceId,
       docId,
       docScheduleId,
       patientId: user.id,
-      diagnoseTime: moment(startTime).toDate(),
+      diagnoseTime: diagnoseTime.toDate(),
       diagnoseResult: null,
       status: APPOINTMENT_STATUS.LOCK,
       createTime: new Date(),
@@ -162,6 +198,19 @@ router.post("/deal", async (req, res, next) => {
     const data = await appointmentDao.insert(cache);
     // 清除缓存
     await appointmentService.removeResourceCache(docId, user.id);
+    res.send(resSuccess(data));
+  } catch(err) {
+    next(err);
+  }
+});
+// 患者候诊
+router.post("/checkin", async (req, res, next) => {
+  const params = req.body;
+  const user = req.auth;
+  try {
+    const { id } = params;
+    // 更新号源状态
+    const data = await appointmentDao.updateStatus(id, APPOINTMENT_STATUS.DIAGNOSE_HOLD, user.username);
     res.send(resSuccess(data));
   } catch(err) {
     next(err);
