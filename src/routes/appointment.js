@@ -216,4 +216,24 @@ router.post("/checkin", async (req, res, next) => {
     next(err);
   }
 });
+// 医生诊断
+router.post("/diagnose", async (req, res, next) => {
+  const params = req.body;
+  const user = req.auth;
+  try {
+    const { id, diagnoseResult } = params;
+    // 更新数据库
+    const row = {
+      id,
+      diagnoseResult,
+      status: APPOINTMENT_STATUS.DIAGNOSE_DONE,
+      updateTime: new Date(),
+      updateUser: user.username
+    }
+    const data = await appointmentDao.update(id, row);
+    res.send(resSuccess(data));
+  } catch(err) {
+    next(err);
+  }
+});
 export default router;
