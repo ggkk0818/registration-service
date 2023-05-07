@@ -78,11 +78,11 @@ router.post("/", async (req, res, next) => {
       updateUser: user.username,
     });
     // 同步增加系统用户
-    const docUser = userDao.findByName(params.name);
+    const docUser = await userDao.findByName(params.name);
+    console.log("查找用户", params.name, docUser);
     if (docUser == null) {
-      const userId = generateId();
       await userDao.insert({
-        id: userId,
+        id,
         name: params.name,
         password: params.password,
         nickName: params.realName,

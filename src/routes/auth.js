@@ -65,7 +65,7 @@ router.get("/info", async function (req, res, next) {
   try {
     const { id, roleId } = req.auth || {};
     let user = null;
-    if (roleId === USER_ROLE.ADMIN) {
+    if (roleId === USER_ROLE.ADMIN || roleId === USER_ROLE.DOCTOR) {
       // 查系统用户表（管理员、医生）
       user = await userDao.findById(id);
     } else {
