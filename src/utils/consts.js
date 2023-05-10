@@ -23,3 +23,9 @@ export const APPOINTMENT_STATUS = {
   DIAGNOSE_DONE: 3, // 诊断完成
   CANCEL: 4 // 已取消
 };
+// stomp消息类型
+export const STOMP_MESSAGE_TYPE = {
+  ADD: "add",
+  UPDATE: "update",
+  DELETE: "delete"
+};

@@ -5,7 +5,9 @@ import redis from "../utils/redis.js";
 import doctorDao from "../dao/doctor.js";
 import scheduleDao from "../dao/schedule.js";
 import resourceDao from "../dao/resource.js";
+import stompService from "./stomp.js";
 import logger from "../../logger.js";
+import { STOMP_MESSAGE_TYPE } from "../utils/consts.js";
 const DOCTOR_KEY_PREFIX = "DOCTOR";
 const RESOURCE_KEY_PREFIX = "RESOURCE";
 const RESOURCECACHE_KEY_PREFIX = "RESOURCECACHE";
@@ -161,7 +163,11 @@ export async function queryDoctorResourceList(date, user, query, start = 0, limi
  * @returns 
  */
 export async function updateResourceCount(resourceId, count) {
-  return resourceDao.updateResourceCount(resourceId, count);
+  await resourceDao.updateResourceCount(resourceId, count);
+  // 发送号源更新通知
+  resourceDao.findById(resourceId).then(res => {
+    stompService.publicResource(res);
+  });
 }
 
 export default {
