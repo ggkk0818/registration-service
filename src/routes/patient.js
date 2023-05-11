@@ -1,6 +1,7 @@
 import express from "express";
 import patientDao from "../dao/patient.js";
 import { resSuccess, generateId } from "../utils/utils.js";
+import { sha1 } from "../utils/encrypt.js";
 const router = express.Router();
 // 查询患者列表
 router.get("/", async (req, res, next) => {

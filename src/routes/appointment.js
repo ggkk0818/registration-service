@@ -139,7 +139,7 @@ router.post("/prepare", async (req, res, next) => {
     }
     // 先释放缓存的号源
     if (cache) {
-      await appointmentService.updateResourceCount(cache.resourceId, 1);
+      await appointmentService.updateResourceCount(cache.resourceId, 1, user);
     }
     // 创建号源缓存
     const diagnoseTime = moment(scheduleDate).startOf("day");
@@ -162,7 +162,7 @@ router.post("/prepare", async (req, res, next) => {
     await appointmentService.addResourceCache(row);
     // 更新号源数量
     console.log("prepare号源", row);
-    await appointmentService.updateResourceCount(resourceId, -1);
+    await appointmentService.updateResourceCount(resourceId, -1, user);
     // 返回号源信息
     res.send(resSuccess(row));
   } catch (err) {

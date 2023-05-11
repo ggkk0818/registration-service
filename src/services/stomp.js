@@ -25,21 +25,21 @@ class WebSocketService {
    * @param {*} body 
    * @param {*} type 
    */
-  publish(topic, data = {}, type = STOMP_MESSAGE_TYPE.UPDATE) {
+  publish(topic, data = {}, user, type = STOMP_MESSAGE_TYPE.UPDATE) {
     console.log("发送STOMP消息", topic, JSON.stringify({ type, data }));
     this.client && this.client.publish({
       destination: topic,
-      body: JSON.stringify({ type, data })
+      body: JSON.stringify({ type, data, userId: user?.id })
     });
   }
-  publicAppointment(item, type) {
-    this.publish(`/topic/appointment`, item, type);
+  publicAppointment(item, user, type) {
+    this.publish(`/topic/appointment`, item, user, type);
   }
-  publicResource(item, type) {
-    this.publish(`/topic/resource`, item, type);
+  publicResource(item, user, type) {
+    this.publish(`/topic/resource`, item, user, type);
   }
-  publicAnnouncement(item, type) {
-    this.publish(`/topic/announcement`, item, type);
+  publicAnnouncement(item, user, type) {
+    this.publish(`/topic/announcement`, item, user, type);
   }
 }
 const instance = new WebSocketService()

@@ -143,6 +143,8 @@ export async function queryDoctorResourceList(date, user, query, start = 0, limi
       await prev
       const cache = await getResourceCache(doctor.id, user.id);
       console.log("医生缓存", doctor.realName, cache);
+      // 缓存返回给前端用于接收websocket消息时判断实际号源数量
+      doctor.cache = cache;
       doctor.diagnoseDate = date;
       doctor.resourceCount = cache ? 1 : 0;
       doctor.resourceList = resourceList.filter(item => item.docId === doctor.id).map(item => {
@@ -162,11 +164,11 @@ export async function queryDoctorResourceList(date, user, query, start = 0, limi
  * @param {*} count 数量
  * @returns 
  */
-export async function updateResourceCount(resourceId, count) {
+export async function updateResourceCount(resourceId, count, user) {
   await resourceDao.updateResourceCount(resourceId, count);
   // 发送号源更新通知
   resourceDao.findById(resourceId).then(res => {
-    stompService.publicResource(res);
+    stompService.publicResource(res, user);
   });
 }
 
