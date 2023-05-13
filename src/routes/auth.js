@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import userDao from "../dao/admin.js";
 import patientDao from "../dao/patient.js";
 import config from "../../config.js";
-import { resSuccess, resError } from "../utils/utils.js";
+import { resSuccess, resError, generateId } from "../utils/utils.js";
 import { USER_ROLE } from "../utils/consts.js";
 import { sha1 } from "../utils/encrypt.js";
 import svgCaptcha from "svg-captcha";
@@ -84,6 +84,40 @@ router.get("/info", async function (req, res, next) {
     res.send(resSuccess(others, 200, "登录成功"));
   } catch (err) {
     console.error(err);
+    next(err);
+  }
+});
+
+router.post("/register", async (req, res, next) => {
+  const params = req.body;
+  const user = req.auth;
+  try {
+    // 用户名校验
+    const name = params?.name;
+    if (!name || String(name).replace(/ /g, "").length === 0) {
+      res.send(resError(null, 400, "请填写用户名"));
+      return;
+    }
+    const existsUser = await patientDao.findByName(name);
+    if (existsUser) {
+      res.send(resError(null, 400, "用户名已存在"));
+      return;
+    }
+    // 密码加密
+    if (params && params.password) {
+      params.password = sha1(params.password)
+    }
+    const id = generateId();
+    const data = await patientDao.insert({
+      ...params,
+      id,
+      createTime: new Date(),
+      createUser: "system",
+      updateTime: new Date(),
+      updateUser: "system",
+    });
+    res.send(resSuccess(data));
+  } catch (err) {
     next(err);
   }
 });
