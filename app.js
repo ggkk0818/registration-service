@@ -16,6 +16,7 @@ import departmentRouter from "./src/routes/department.js";
 import appointmentRouter from "./src/routes/appointment.js";
 import configRouter from "./src/routes/config.js";
 import announcementRouter from "./src/routes/announcement.js";
+import statisticRouter from "./src/routes/statistic.js";
 import publicRouter from "./src/routes/public.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,6 +50,9 @@ app.use("/announcement", announcementRouter);
 // 系统配置
 app.use("/config", jwtAuth);
 app.use("/config", configRouter);
+// 数据统计
+app.use("/statistic", jwtAuth);
+app.use("/statistic", statisticRouter);
 // 外部接口
 app.use("/public", publicRouter);
 // 支持history模式

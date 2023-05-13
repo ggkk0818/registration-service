@@ -1,6 +1,6 @@
 import BaseDao from "./BaseDao.js";
 import knex from "../utils/knex.js";
-
+import moment from "moment";
 class AppointmentDao extends BaseDao {
   constructor() {
     super("reg_appointment", {
@@ -20,7 +20,7 @@ class AppointmentDao extends BaseDao {
 
   // 分页查询
   async list(query, start = 0, limit = 10) {
-    const { docName, deptId, patientName, paatientMobile, ...others } = query || {};
+    const { docName, deptId, patientName, paatientMobile, diagnoseTime, ...others } = query || {};
     const whereQuery = this.props2fields(others, true);
     if (docName) {
       whereQuery["reg_doctor.real_name"] = docName;
@@ -34,8 +34,7 @@ class AppointmentDao extends BaseDao {
     if (paatientMobile) {
       whereQuery["reg_user.mobile"] = paatientMobile;
     }
-    console.log("分页查询", whereQuery);
-    let list = await knex(this.table)
+    let queryList = knex(this.table)
       .select(this.propsWithTable)
       .leftJoin('reg_doctor', 'reg_appointment.doc_id', 'reg_doctor.id')
       .select({ docName: 'reg_doctor.real_name' })
@@ -47,12 +46,20 @@ class AppointmentDao extends BaseDao {
       .orderBy("reg_appointment.update_time", "desc")
       .offset(start)
       .limit(limit);
-    const total = await knex(this.table)
+    let queryCount = knex(this.table)
       .count("reg_appointment.id as CNT")
       .leftJoin('reg_doctor', 'reg_appointment.doc_id', 'reg_doctor.id')
       .leftJoin('reg_department', 'reg_doctor.dept_id', 'reg_department.id')
       .leftJoin('reg_user', 'reg_appointment.user_id', 'reg_user.id')
       .where(whereQuery);
+    if (diagnoseTime) {
+      const date = moment(diagnoseTime);
+      queryList = queryList.whereBetween("reg_appointment.diagnose_time", [date.startOf("day").toDate(), date.endOf("day").toDate()]);
+      queryCount = queryCount.whereBetween("reg_appointment.diagnose_time", [date.startOf("day").toDate(), date.endOf("day").toDate()]);
+    }
+    console.log("分页查询", whereQuery);
+    let list = await queryList;
+    const total = await queryCount;
     return {
       records: list,
       total: parseInt(total[0].CNT) || 0,
