@@ -16,6 +16,7 @@ import departmentRouter from "./src/routes/department.js";
 import appointmentRouter from "./src/routes/appointment.js";
 import configRouter from "./src/routes/config.js";
 import announcementRouter from "./src/routes/announcement.js";
+import publicRouter from "./src/routes/public.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
@@ -48,6 +49,8 @@ app.use("/announcement", announcementRouter);
 // 系统配置
 app.use("/config", jwtAuth);
 app.use("/config", configRouter);
+// 外部接口
+app.use("/public", publicRouter);
 // 支持history模式
 // app.use(
 //   history({
