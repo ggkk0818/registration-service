@@ -12,12 +12,20 @@ class BaseDao {
   constructor(tableName, props, defaultValues) {
     this.table = tableName;
     this.props = props;
+    this.propsWithTable = props ? Object.entries(props).map(([key, val]) => [key, `${tableName}.${val}`]).reduce((obj, [key, val]) => {
+      obj[key] = val;
+      return obj;
+    }, {}) : undefined;
     this.defaultValues = defaultValues;
   }
 
-  // 查找
+  // 全量查询
   all() {
-    return knex(this.table).select(this.props);
+    let query = knex(this.table).select(this.props);
+    if (this.props && Object.values(this.props).includes("is_del")) {
+      query = query.whereNot("is_del", "=", 1);
+    }
+    return query;
   }
 
   // 分页查询
@@ -47,9 +55,24 @@ class BaseDao {
       .first();
   }
 
+  // 根据id数组查询
+  findByIds(ids) {
+    return knex(this.table)
+      .select(this.props)
+      .whereIn("id", ids)
+      .whereNot("is_del", "=", 1);
+  }
+
   // 新增
   insert(params) {
-    return knex(this.table).insert({ ...this.defaultValues, ...this.props2fields(params) });
+    return knex(this.table).insert({ ...this.defaultValues, ...this.props2fields(params) }, "id");
+  }
+
+  // 批量新增
+  batchInsert(arr) {
+    return knex.batchInsert(this.table, arr.map(item => {
+      return { ...this.defaultValues, ...this.props2fields(item) };
+    }), 100).returning('id')
   }
 
   // 更改
@@ -66,14 +89,15 @@ class BaseDao {
   /**
    * 将实体类对象转为数据库字段对象
    * @param {*} obj 实体类对象
+   * @param {Boolean} withTable 字段名是否带表名
    * @returns {Object} 数据库字段对象
    */
-  props2fields(obj) {
+  props2fields(obj, withTable = false) {
     let val = {};
-    if (this.props != null) {
+    if (this.props != null && obj != null) {
       Object.entries(this.props).forEach(([key, field]) => {
         if (obj[key] !== undefined) {
-          val[field] = obj[key];
+          val[withTable ? `${this.table}.${field}` : field] = obj[key];
         }
       });
     }
@@ -86,11 +110,11 @@ class BaseDao {
     };
     if (this.props != null) {
       Object.entries(this.props).forEach(([key, field]) => {
-        if (obj[field] !== undefined) {
+        if (obj && obj[field] !== undefined) {
           val[key] = obj[field];
-          // 删除数据库字段
-          delete val[field];
         }
+        // 删除数据库字段
+        delete val[field];
       });
     }
     return val;

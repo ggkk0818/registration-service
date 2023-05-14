@@ -1,12 +1,13 @@
 import express from "express";
-import userDao from "../dao/admin.js";
+import patientDao from "../dao/patient.js";
 import { resSuccess, generateId } from "../utils/utils.js";
+import { sha1 } from "../utils/encrypt.js";
 const router = express.Router();
-// 查询用户列表
+// 查询患者列表
 router.get("/", async (req, res, next) => {
   const { pageNo, pageSize, ...query } = req.query;
   try {
-    const data = await userDao.list(query, (pageNo - 1) * pageSize, pageSize);
+    const data = await patientDao.list(query, (pageNo - 1) * pageSize, pageSize);
     if (data?.records) {
       // 返回值去除密码字段
       data.records.forEach(item => {
@@ -18,17 +19,17 @@ router.get("/", async (req, res, next) => {
     next(err);
   }
 });
-// 查询用户详情
+// 查询患者详情
 router.get("/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
-    const data = await userDao.findById(id);
+    const data = await patientDao.findById(id);
     res.send(resSuccess(data));
   } catch (err) {
     next(err);
   }
 });
-// 新增用户
+// 新增患者
 router.post("/", async (req, res, next) => {
   const params = req.body;
   const user = req.auth;
@@ -38,10 +39,9 @@ router.post("/", async (req, res, next) => {
       params.password = sha1(params.password)
     }
     const id = generateId();
-    const data = await userDao.insert({
+    const data = await patientDao.insert({
       ...params,
       id,
-      roleId: "admin",
       createTime: new Date(),
       createUser: user.username,
       updateTime: new Date(),
@@ -52,7 +52,7 @@ router.post("/", async (req, res, next) => {
     next(err);
   }
 });
-// 编辑用户
+// 编辑患者
 router.put("/", async (req, res, next) => {
   const params = req.body;
   const user = req.auth;
@@ -63,7 +63,7 @@ router.put("/", async (req, res, next) => {
     }
     delete params.createTime
     delete params.createUser
-    const data = await userDao.update(params.id, {
+    const data = await patientDao.update(params.id, {
       ...params,
       updateTime: new Date(),
       updateUser: user.username,
@@ -73,11 +73,11 @@ router.put("/", async (req, res, next) => {
     next(err);
   }
 });
-// 删除用户
+// 删除患者
 router.delete("/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
-    await userDao.delete(id);
+    await patientDao.delete(id);
     res.send(resSuccess());
   } catch (err) {
     next(err);

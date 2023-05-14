@@ -9,8 +9,15 @@ import logger from "./logger.js";
 import { resError } from "./src/utils/utils.js";
 import jwtAuth from "./src/utils/auth.js";
 import authRouter from "./src/routes/auth.js";
-import usersRouter from "./src/routes/users.js";
+import doctorRouter from "./src/routes/doctor.js";
+import patientRouter from "./src/routes/patient.js";
 import adminRouter from "./src/routes/admin.js";
+import departmentRouter from "./src/routes/department.js";
+import appointmentRouter from "./src/routes/appointment.js";
+import configRouter from "./src/routes/config.js";
+import announcementRouter from "./src/routes/announcement.js";
+import statisticRouter from "./src/routes/statistic.js";
+import publicRouter from "./src/routes/public.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
@@ -19,13 +26,35 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-
+// 用户认证
 app.use("/auth", jwtAuth);
 app.use("/auth", authRouter);
-app.use("/users", jwtAuth);
-app.use("/users", usersRouter);
+// 系统用户
 app.use("/admin", jwtAuth);
 app.use("/admin", adminRouter);
+// 科室管理
+app.use("/department", jwtAuth);
+app.use("/department", departmentRouter);
+// 医生管理
+app.use("/doctor", jwtAuth);
+app.use("/doctor", doctorRouter);
+// 患者管理
+app.use("/patient", jwtAuth);
+app.use("/patient", patientRouter);
+// 预约管理
+app.use("/appointment", jwtAuth);
+app.use("/appointment", appointmentRouter);
+// 公告管理
+app.use("/announcement", jwtAuth);
+app.use("/announcement", announcementRouter);
+// 系统配置
+app.use("/config", jwtAuth);
+app.use("/config", configRouter);
+// 数据统计
+app.use("/statistic", jwtAuth);
+app.use("/statistic", statisticRouter);
+// 外部接口
+app.use("/public", publicRouter);
 // 支持history模式
 // app.use(
 //   history({
@@ -45,6 +74,7 @@ app.use(function (req, res, next) {
 // 处理非404的错误（throw 出来的错误)
 const _errorHandler = (err, req, res, next) => {
   logger.error(`${req.method} ${req.originalUrl} ` + err.message);
+  console.log(err);
   switch (err && err.name) {
     case "UnauthorizedError":
       res.send(resError(null, 11001, "登录失效，请重新登录。"));

@@ -1,16 +1,16 @@
 import BaseDao from "./BaseDao.js";
 
-class AdminDao extends BaseDao {
+class PatientDao extends BaseDao {
   constructor() {
-    super("reg_admin", {
+    super("reg_user", {
       id: "id",
       name: "name",
-      password: "password",
-      nickName: "nick_name",
-      email: "email",
+      password: "pwd",
+      realName: "real_name",
+      age: "age",
+      gender: "gender",
       mobile: "mobile",
-      remark: "remark",
-      roleId: "role_id",
+      idCard: "id_card",
       isEnabled: "is_enabled",
       isDel: "is_del",
       createTime: "create_time",
@@ -28,4 +28,4 @@ class AdminDao extends BaseDao {
     return data?.records?.[0];
   }
 }
-export default new AdminDao();
+export default new PatientDao();

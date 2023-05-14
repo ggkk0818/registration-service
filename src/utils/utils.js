@@ -1,3 +1,5 @@
+import { snowflakeGenerator } from "snowflake-id-js";
+const generator = snowflakeGenerator(512);
 /**
  * 封装响应成功返回值
  * @param {*} data
@@ -21,4 +23,11 @@ export function resError(
   message = "服务器开小差了，稍后再试吧"
 ) {
   return { data, code, message };
+}
+/**
+ * 生成雪花算法id
+ * @returns 
+ */
+export function generateId() {
+  return generator.next().value;
 }
